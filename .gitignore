@@ -1,0 +1,18 @@
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Output renders (optional: uncomment if you don't want to track generated exports)
+# options/
+# OUTPUT/
+
+# Temporary / OS files
+.DS_Store
+Thumbs.db
+*.tmp
