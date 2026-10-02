@@ -16,16 +16,18 @@ It merges multiple spatial sources:
 
 2. CURRENT SCRIPT STATUS
 ------------------------------------------------------------------------
-The main script (`script.py`) is configured with:
+The project has been consolidated into a single master script (`script.py`)
+with all configurations unified at the top:
 
 * Active Configuration:
   - Default Style : "NAUTICAL_POSTER"
-  - Default Size  : "18X24" (Standard wall poster scale, SF = 1.5)
-  - Default Theme : "ADMIRALTY" (Modern crisp hydrographic navy/ocean fills)
+  - Supported Sizes: "18X24", "METAL", "ORIGINAL"
+  - Default Size  : "18X24" (or set to "METAL" for metal prints)
+  - Palettes      : Batched rendering across 5 curated themes
 
 * Bathymetric & Cartographic Styling:
   - Contours: Sequential 2 m interval isobaths (2 m through 14 m) labeled 
-    along line tangents (`frac = 0.50`) with white stroke halos.
+    along curve tangents (`frac = 0.50`) with white stroke halos.
   - Deep Point: Survey fossa marked by a standalone "+" crosshair.
   - Hydrology: Southern outlet stream extracted and routed under the road network.
   - Landmarks: Cabin coordinates set for "Hytta" with offset label placement.
@@ -38,14 +40,18 @@ The main script (`script.py`) is configured with:
 Pretty Maps Quebec/
 │
 ├── .venv/                      # Python virtual environment
-├── OUTPUT/                     # Generated charts (PDF & PNG)
+├── .gitignore                  # Git ignore rules (.venv, cache files)
+├── options/                    # Batched output charts (PDF & PNG)
 │   ├── lac_dufresne_18x24_admiralty.pdf
 │   ├── lac_dufresne_18x24_admiralty.png
+│   ├── lac_dufresne_metal_admiralty.png
 │   └── ...
 │
-├── script.py                   # Master cartographic generator
+├── script.py                   # Master cartographic generator (consolidated)
 ├── extract_lake.py             # Preprocessor to extract/dissolve CanVec lake body
 ├── find_dufresne.py            # Diagnostic coordinate/bounding box helper
+├── insepct_gpkg.py             # Layer & CRS inspection tool for GeoPackages
+├── get_dem.py                  # DEM clipping & bounding box helper
 │
 ├── 01374_Dufresne.gpkg         # Bathymetric contours and sounding pits
 ├── lake_shoreline.gpkg         # Surveyed shoreline geometry
@@ -61,14 +67,19 @@ A. `STYLE_MODE`
    - "NAUTICAL_POSTER"   : Complete map composition with neatlines, parchment/paper 
                            washes, legends, scale, and metadata blocks.
    - "TRANSPARENT_BLACK" : Clean, minimalist black linework on an alpha-transparent 
-                           canvas suitable for laser cutting or overlays.
+                           canvas suitable for laser cutting, CNC, or overlays.
 
 B. `POSTER_SIZE`
-   - "18X24"    : 24.0" canvas height with scaled factor `SF = 1.5` for all text, 
-                  line weights, casings, and symbols.
-   - "ORIGINAL" : 16.0" canvas height with baseline factor `SF = 1.0` (~12"x16").
+   - "18X24"    : Standard North American large poster (24" canvas height, width ~17.65").
+                  Scaling factor SF = 1.5, rendered at 300 DPI (PDF & PNG).
+   - "METAL"    : European / Displate standard metal poster (12.6" × 17.7" / 32cm × 45cm).
+                  Scaling factor SF = 1.15, super-sampled at ultra-sharp 600 DPI (7,560 × 10,620 px).
+                  Automatically expands geographic bounds symmetrically to conform exactly to the 
+                  12.6 : 17.7 frame ratio without distortion. Outputs raster PNGs only, as commercial 
+                  metal print vendors require high-resolution image files.
+   - "ORIGINAL" : Baseline wall print (~12" × 16"). Baseline scaling factor SF = 1.0 at 300 DPI.
 
-C. `PALETTE`
+C. `PALETTES` (Batched across all 5 themes)
    - "ADMIRALTY"       : Crisp alabaster background (#FAF9F6) with marine navy, 
                          deep cyan contours, and coastal blue washes.
    - "CLASSIC_HYDRO"   : Warm linen background (#FBF9F4) with vintage teal washes 
@@ -83,20 +94,19 @@ C. `PALETTE`
 
 5. OUTPUTS & PRINT CONSIDERATIONS
 ------------------------------------------------------------------------
-* Vector PDF (`.pdf`):
-  Always use the generated PDF for professional large-format printing. Text, 
-  cased roads, neatlines, and contour vectors are preserved with infinite 
-  resolution on commercial plotters.
+* Metal Print Considerations (`POSTER_SIZE = "METAL"`):
+  - Canvas Aspect Ratio : 12.6" × 17.7" (1 : 1.405 ratio, matching Displate Medium size).
+  - Resolution          : 600 DPI super-sampling results in 7,560 × 10,620 pixel masters.
+  - Geometry Adaptation : Symmetrically pads either latitude or longitude so the map fills
+                          the plate without stretching or artificial letterboxing.
+  - File Format         : PNG raster only. Professional metal photo-labs require high-DPI 
+                          raster files (PNG or converted 100% quality JPEG) rather than PDFs.
 
-* Raster Preview (`.png`):
-  Rendered at 300 DPI for high-resolution screen viewing, proofing, or digital 
-  sharing.
-
-* Print Frame Dimensions:
-  At `POSTER_SIZE = "18X24"`, the map extent calculates to ~17.65" × 24.00" 
-  to preserve true geographic aspect ratio without coordinate distortion. 
-  This fits cleanly into standard off-the-shelf 18" × 24" poster frames with 
-  a minor ~0.17" border tolerance under the frame rabbet or matting.
+* Paper Wall Poster (`POSTER_SIZE = "18X24"`):
+  - Vector PDF (`.pdf`) : Infinite resolution for commercial plotters and offset printing.
+  - Raster PNG (`.png`) : 300 DPI high-resolution proofing copy (~5,295 × 7,200 px).
+  - Print Frame Extent  : Maps to ~17.65" × 24.00" to preserve geographic ground aspect ratio,
+                          fitting standard 18" × 24" poster frames with minimal matting.
 
 
 6. USAGE
@@ -113,5 +123,5 @@ Run in a PowerShell terminal:
 3. Execute the script:
    python .\script.py
 
-Generated files are placed in the `OUTPUT/` directory.
+Generated files are placed in the `options/` directory.
 ========================================================================
